@@ -1,0 +1,5 @@
+Build
+*.sln
+.vs
+obj/
+bin/
