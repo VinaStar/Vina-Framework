@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="Core\BaseClient.cs" />
     <Compile Include="Core\Module.cs" />
+    <Compile Include="Core\ModuleScript.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

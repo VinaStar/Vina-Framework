@@ -3,3 +3,5 @@ Build
 .vs
 obj/
 bin/
+Doxyfile
+Docs

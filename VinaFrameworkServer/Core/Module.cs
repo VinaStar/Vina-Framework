@@ -6,14 +6,30 @@ using CitizenFX.Core;
 namespace VinaFrameworkServer.Core
 {
     /// <summary>
-    /// 
+    /// Extend all your modules with the Module class and add them to your Server class constructor.
     /// </summary>
     public abstract class Module
     {
         /// <summary>
-        /// This current module name.
+        /// Extend all your modules with the Module class and add them to your Server class constructor.
         /// </summary>
-        protected string Name { get; }
+        /// <param name="server">A BaseServer class</param>
+        public Module(BaseServer server)
+        {
+            Name = this.GetType().Name;
+            this.server = server;
+            script = new ModuleScript(this);
+            BaseServer.RegisterScript(script);
+            script.AddInternalTick(initialize);
+            script.Log($"Instance created!");
+        }
+
+        #region VARIABLES
+
+        /// <summary>
+        /// Current module name.
+        /// </summary>
+        public string Name { get; }
 
         /// <summary>
         /// Read-only reference to the server instance.
@@ -21,22 +37,18 @@ namespace VinaFrameworkServer.Core
         protected BaseServer server { get; }
 
         /// <summary>
-        /// Extend your module class with this class and add it to your server constructor.
+        /// Read-only reference to the module script instance.
         /// </summary>
-        /// <param name="server"></param>
-        public Module(BaseServer server)
-        {
-            Name = this.GetType().Name;
-            this.server = server;
-            server.AddInternalTick(initialize);
-            Log($"Instance created!");
-        }
+        protected ModuleScript script { get; }
+
+        #endregion
+        #region BASE EVENTS
 
         private async Task initialize()
         {
-            Log($"Initializing...");
+            script.Log($"Initializing...");
 
-            server.RemoveInternalTick(initialize);
+            script.RemoveInternalTick(initialize);
             
             await BaseServer.Delay(0);
 
@@ -46,7 +58,7 @@ namespace VinaFrameworkServer.Core
             }
             catch (Exception exception)
             {
-                LogError(exception, " in OnModuleInitialized");
+                script.LogError(exception);
             }
         }
 
@@ -55,7 +67,7 @@ namespace VinaFrameworkServer.Core
         /// </summary>
         protected virtual void OnModuleInitialized()
         {
-            Log($"Initialized!");
+            script.Log($"Initialized!");
         }
 
         internal void onPlayerConnecting(Player player)
@@ -87,38 +99,11 @@ namespace VinaFrameworkServer.Core
         }
 
         /// <summary>
-        /// 
+        /// Overridable method that run when the client has initialized. (After loading)
         /// </summary>
-        /// <param name="player"></param>
+        /// <param name="player">The player client that has initialized.</param>
         protected abstract void OnPlayerClientInitialized(Player player);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="msecs"></param>
-        public static Task Delay(int msecs)
-        {
-            return BaseServer.Delay(msecs);
-        }
-
-        /// <summary>
-        /// Log a message from this module.
-        /// </summary>
-        /// <param name="message">The message to log.</param>
-        protected void Log(string message)
-        {
-            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [INFO] {server.ResourceName.ToUpper()} > {Name.ToUpper()}: {message}");
-        }
-
-        /// <summary>
-        /// Log an exception from this module.
-        /// </summary>
-        /// <param name="exception">The Exception to log.</param>
-        /// <param name="prefix">Some text to add before the log message.</param>
-        protected void LogError(Exception exception, string prefix = "")
-        {
-            string pre = (prefix != "") ? $" {prefix}" : "";
-            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {server.ResourceName.ToUpper()} > {Name.ToUpper()}{pre}: {exception.Message}\n{exception.StackTrace}");
-        }
+        #endregion
     }
 }

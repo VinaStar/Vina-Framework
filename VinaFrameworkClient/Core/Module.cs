@@ -6,14 +6,30 @@ using CitizenFX.Core;
 namespace VinaFrameworkClient.Core
 {
     /// <summary>
-    /// Extend your module class with this class and add it to your client constructor.
+    /// Extend all your modules with the Module class and add them to your Client class constructor.
     /// </summary>
     public abstract class Module
     {
         /// <summary>
-        /// This current module name.
+        /// Extend all your modules with the Module class and add them to your Client class constructor.
         /// </summary>
-        protected string Name { get; }
+        /// <param name="client">A BaseClient class</param>
+        public Module(BaseClient client)
+        {
+            Name = this.GetType().Name;
+            this.client = client;
+            script = new ModuleScript(this);
+            BaseClient.RegisterScript(script);
+            script.AddInternalTick(initialize);
+            script.Log($"Instance created!");
+        }
+
+        #region VARIABLES
+
+        /// <summary>
+        /// Current module name.
+        /// </summary>
+        public string Name { get; }
 
         /// <summary>
         /// Read-only reference to the client instance.
@@ -21,22 +37,18 @@ namespace VinaFrameworkClient.Core
         protected BaseClient client { get; }
 
         /// <summary>
-        /// Extend your module class with this class and add it to your client constructor.
+        /// Read-only reference to the module script instance.
         /// </summary>
-        /// <param name="client"></param>
-        public Module(BaseClient client)
-        {
-            Name = this.GetType().Name;
-            this.client = client;
-            client.AddInternalTick(initialize);
-            Log($"Instance created!");
-        }
+        protected ModuleScript script { get; }
+
+        #endregion
+        #region BASE EVENTS
 
         private async Task initialize()
         {
-            Log($"Initializing...");
+            script.Log($"Initializing...");
 
-            client.RemoveInternalTick(initialize);
+            script.RemoveInternalTick(initialize);
 
             await BaseClient.Delay(0);
 
@@ -46,7 +58,7 @@ namespace VinaFrameworkClient.Core
             }
             catch (Exception exception)
             {
-                LogError(exception, " in OnModuleInitialized");
+                script.LogError(exception, " in OnModuleInitialized");
             }
         }
 
@@ -55,36 +67,9 @@ namespace VinaFrameworkClient.Core
         /// </summary>
         protected virtual void OnModuleInitialized()
         {
-            Log($"Initialized!");
+            script.Log($"Initialized!");
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="msecs"></param>
-        public static Task Delay(int msecs)
-        {
-            return BaseClient.Delay(msecs);
-        }
-
-        /// <summary>
-        /// Log a message from this module.
-        /// </summary>
-        /// <param name="message">The message to log.</param>
-        protected void Log(string message)
-        {
-            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [INFO] {client.ResourceName.ToUpper()} > {Name.ToUpper()}: {message}");
-        }
-
-        /// <summary>
-        /// Log an exception from this module.
-        /// </summary>
-        /// <param name="exception">The Exception to log.</param>
-        /// <param name="prefix">Some text to add before the log message.</param>
-        protected void LogError(Exception exception, string prefix = "")
-        {
-            string pre = (prefix != "") ? $" {prefix}" : "";
-            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {client.ResourceName.ToUpper()} > {Name.ToUpper()}{pre}: {exception.Message}\n{exception.StackTrace}");
-        }
+        #endregion
     }
 }

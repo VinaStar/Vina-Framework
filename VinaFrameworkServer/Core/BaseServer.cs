@@ -8,28 +8,16 @@ using CitizenFX.Core.Native;
 namespace VinaFrameworkServer.Core
 {
     /// <summary>
-    /// Extend your Server script with this class and add modules to your constructor
+    /// Extend your Server class with BaseServer class and add your modules into the constructor.
     /// </summary>
     public abstract class BaseServer : BaseScript
     {
         /// <summary>
-        /// This current client resource name
-        /// </summary>
-        public static string Name { get; private set; }
-
-        /// <summary>
-        /// This current client resource name
-        /// </summary>
-        public string ResourceName { get { return Name; } }
-
-        private List<Module> modules;
-
-        /// <summary>
-        /// Extend your Server script with this class and add modules to your constructor
+        /// Extend your Server class with BaseServer class and add your modules into the constructor.
         /// </summary>
         public BaseServer()
         {
-            Name = API.GetCurrentResourceName();
+            ResourceName = API.GetCurrentResourceName();
             modules = new List<Module>();
             EventHandlers["playerConnecting"] += new Action<Player>(onPlayerConnecting);
             EventHandlers["playerDropped"] += new Action<Player, string>(onPlayerDropped);
@@ -39,7 +27,22 @@ namespace VinaFrameworkServer.Core
             Log($"Instanciating...");
         }
 
-        #region Base Events
+        #region VARIABLES
+
+        /// <summary>
+        /// This current client resource name
+        /// </summary>
+        public static string ResourceName { get; private set; }
+
+        /// <summary>
+        /// This current client resource name
+        /// </summary>
+        public string Name { get { return ResourceName; } }
+
+        private List<Module> modules;
+
+        #endregion
+        #region BASE EVENTS
 
         private void onPlayerConnecting([FromSource] Player player)
         {
@@ -91,14 +94,13 @@ namespace VinaFrameworkServer.Core
         }
 
         #endregion
-
-        #region Methods
+        #region SERVER METHODS
 
         /// <summary>
-        /// Verify if the module has been loaded.
+        /// Check if a Module has been added to the Server instance.
         /// </summary>
-        /// <param name="moduleType">The module class type. Ex: typeof(MyModule)</param>
-        /// <returns></returns>
+        /// <param name="moduleType">Your module type. Ex: typeof(MyModule)</param>
+        /// <returns>True if it was found.</returns>
         public bool HasModule(Type moduleType)
         {
             foreach (Module module in modules)
@@ -113,10 +115,10 @@ namespace VinaFrameworkServer.Core
         }
 
         /// <summary>
-        /// Add module by referencing the type of your module class.
+        /// Add a module by passing your Module type.
         /// </summary>
-        /// <param name="moduleType">The module class type. Ex: typeof(MyModule)</param>
-        public void AddModule(Type moduleType)
+        /// <param name="moduleType">Your module type. Ex: typeof(MyModule)</param>
+        protected void AddModule(Type moduleType)
         {
             bool error = false;
             foreach(Module _module in modules)
@@ -145,9 +147,9 @@ namespace VinaFrameworkServer.Core
         }
 
         /// <summary>
-        /// Get a module instance from anywhere, cannot be called inside a module constructor.
+        /// Get a module instance. Cannot be called inside a Module constructor.
         /// </summary>
-        /// <typeparam name="T">The module class type.</typeparam>
+        /// <typeparam name="T">Your module type. Ex: &lt;MyModule&gt;</typeparam>
         /// <returns>Return the module or throw an exception if the module is not found.</returns>
         public T GetModule<T>()
         {
@@ -163,91 +165,72 @@ namespace VinaFrameworkServer.Core
         }
 
         /// <summary>
-        /// Register an event.
+        /// Add an event.
         /// </summary>
-        /// <param name="eventName">The event name to register.</param>
-        /// <param name="action">The event delegate to register.</param>
-        public void RegisterEvent(string eventName, Delegate action)
+        /// <param name="eventName">Event name to add.</param>
+        /// <param name="action">Event delegate to add.</param>
+        protected void AddEvent(string eventName, Delegate action)
         {
             EventHandlers[eventName] += action;
-            Log($"Event {eventName} registered!");
+            Log($"Event {eventName} added!");
         }
 
         /// <summary>
-        /// Un-register an event.
+        /// Remove an event.
         /// </summary>
-        /// <param name="eventName">The event name to un-register.</param>
-        /// <param name="action">The event delegate to un-register.</param>
-        public void UnregisterEvent(string eventName, Delegate action)
+        /// <param name="eventName">Event name to remove.</param>
+        /// <param name="action">Event delegate to remove.</param>
+        protected void RemoveEvent(string eventName, Delegate action)
         {
             EventHandlers[eventName] -= action;
-            Log($"Event {eventName} deregistered!");
+            Log($"Event {eventName} removed!");
         }
 
         /// <summary>
-        /// Add a tick to the resource.
+        /// Add a tick.
         /// </summary>
-        /// <param name="action">The tick delegate to add.</param>
-        public void AddTick(Func<Task> action)
+        /// <param name="action">Tick delegate to add.</param>
+        protected void AddTick(Func<Task> action)
         {
             Tick += action;
-            Log($"{action.Method.DeclaringType.Name} added Tick {action.Method.Name}!");
+            Log($"Added Tick {action.Method.Name}!");
         }
 
         /// <summary>
-        /// Remove a tick from the resource.
+        /// Remove a tick.
         /// </summary>
-        /// <param name="action">The tick delegate to remove.</param>
-        public void RemoveTick(Func<Task> action)
+        /// <param name="action">Tick delegate to remove.</param>
+        protected void RemoveTick(Func<Task> action)
         {
             Tick -= action;
-            Log($"{action.Method.DeclaringType.Name} removed Tick {action.Method.Name}!");
-        }
-
-        /// <summary>
-        /// Un-register an event.
-        /// </summary>
-        /// <param name="eventName">The event name to un-register.</param>
-        /// <param name="action">The event delegate to un-register.</param>
-        internal void AddInternalTick(Func<Task> action)
-        {
-            Tick += action;
-        }
-
-        /// <summary>
-        /// Remove a tick from the resource.
-        /// </summary>
-        /// <param name="action">The tick delegate to remove.</param>
-        internal void RemoveInternalTick(Func<Task> action)
-        {
-            Tick -= action;
+            Log($"Removed Tick {action.Method.Name}!");
         }
 
         /// <summary>
         /// Get the ExportDictionary.
         /// </summary>
         /// <returns>Return the ExportDictionary.</returns>
-        public ExportDictionary GetExports()
+        protected ExportDictionary GetExports()
         {
             return Exports;
         }
 
         /// <summary>
-        /// Get a specific Export from a resource.
+        /// Get a resource Export.
         /// </summary>
         /// <param name="resourceName"></param>
-        /// <returns>Return the dynamic export.</returns>
-        public dynamic GetExport(string resourceName)
+        /// <returns>Return a dynamic export.</returns>
+        protected dynamic GetExport(string resourceName)
         {
             return Exports[resourceName];
         }
 
         /// <summary>
-        /// Set an Export from this resource.
+        /// Export a delegate method.
         /// </summary>
-        /// <param name="name">The name of the Exported method.</param>
-        /// <param name="method">The delegate of the Exported method.</param>
-        public void SetExport(string name, Delegate method)
+        /// <param name="name">Name of the Export.</param>
+        /// <param name="method">Delegate of the Export.</param>
+        protected void SetExport(string name, Delegate method)
         {
             Exports.Add(name, method);
         }
@@ -256,9 +239,9 @@ namespace VinaFrameworkServer.Core
         /// Log a message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        public void Log(string message)
+        protected void Log(string message)
         {
-            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [INFO] {ResourceName.ToUpper()}: {message}");
+            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [INFO] {BaseServer.ResourceName.ToUpper()}: {message}");
         }
 
         /// <summary>
@@ -266,10 +249,10 @@ namespace VinaFrameworkServer.Core
         /// </summary>
         /// <param name="exception">The Exception to log.</param>
         /// <param name="prefix">Some text to add before the log message.</param>
-        public void LogError(Exception exception, string prefix = "")
+        protected void LogError(Exception exception, string prefix = "")
         {
             string pre = (prefix != "") ? $" {prefix}" : "";
-            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {ResourceName.ToUpper()}{pre}: {exception.Message}\n{exception.StackTrace}");
+            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {BaseServer.ResourceName.ToUpper()}{pre}: {exception.Message}\n{exception.StackTrace}");
         }
 
         #endregion
