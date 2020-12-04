@@ -54,7 +54,7 @@ namespace VinaFrameworkClient.Core
         public void AddTick(Func<Task> action)
         {
             Tick += action;
-            Log($"{module.GetType().Name} added Tick {action.Method.Name}!");
+            Log($"Added Tick {action.Method.Name}!");
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace VinaFrameworkClient.Core
         public void RemoveTick(Func<Task> action)
         {
             Tick -= action;
-            Log($"{module.GetType().Name} removed Tick {action.Method.Name}!");
+            Log($"Removed Tick {action.Method.Name}!");
         }
 
         internal void AddInternalTick(Func<Task> action)
@@ -111,7 +111,7 @@ namespace VinaFrameworkClient.Core
         /// <param name="message">The message to log.</param>
         public void Log(string message)
         {
-            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [INFO] {BaseClient.ResourceName.ToUpper()}: {message}");
+            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [INFO] {BaseClient.ResourceName.ToUpper()} > {module.Name}: {message}");
         }
 
         /// <summary>
@@ -121,8 +121,8 @@ namespace VinaFrameworkClient.Core
         /// <param name="prefix">Some text to add before the log message.</param>
         public void LogError(Exception exception, string prefix = "")
         {
-            string pre = (prefix != "") ? $" {prefix}" : "";
-            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {BaseClient.ResourceName.ToUpper()}{pre}: {exception.Message}\n{exception.StackTrace}");
+            string pre = (prefix != "") ? prefix : "";
+            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {BaseClient.ResourceName.ToUpper()} > {module.Name}{pre}: {exception.Message}\n{exception.StackTrace}");
         }
 
         #endregion

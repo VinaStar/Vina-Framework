@@ -18,8 +18,7 @@ namespace VinaFrameworkServer.Core
         {
             Name = this.GetType().Name;
             this.server = server;
-            script = new ModuleScript(this);
-            BaseServer.RegisterScript(script);
+            BaseServer.RegisterScript(script = new ModuleScript(this));
             script.AddInternalTick(initialize);
             script.Log($"Instance created!");
         }
@@ -58,7 +57,7 @@ namespace VinaFrameworkServer.Core
             }
             catch (Exception exception)
             {
-                script.LogError(exception);
+                script.LogError(exception, " in OnModuleInitialized");
             }
         }
 

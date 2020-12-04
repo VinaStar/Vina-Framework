@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using CitizenFX.Core;
-
 namespace VinaFrameworkClient.Core
 {
     /// <summary>
@@ -18,8 +16,7 @@ namespace VinaFrameworkClient.Core
         {
             Name = this.GetType().Name;
             this.client = client;
-            script = new ModuleScript(this);
-            BaseClient.RegisterScript(script);
+            BaseClient.RegisterScript(script = new ModuleScript(this));
             script.AddInternalTick(initialize);
             script.Log($"Instance created!");
         }

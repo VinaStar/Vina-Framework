@@ -54,7 +54,7 @@ namespace VinaFrameworkServer.Core
         public void AddTick(Func<Task> action)
         {
             Tick += action;
-            Log($"{module.GetType().Name} added Tick {action.Method.Name}!");
+            Log($"Added Tick {action.Method.Name}!");
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace VinaFrameworkServer.Core
         public void RemoveTick(Func<Task> action)
         {
             Tick -= action;
-            Log($"{module.GetType().Name} removed Tick {action.Method.Name}!");
+            Log($"Removed Tick {action.Method.Name}!");
         }
 
         internal void AddInternalTick(Func<Task> action)
@@ -119,9 +119,10 @@ namespace VinaFrameworkServer.Core
         /// </summary>
         /// <param name="exception">The Exception to log.</param>
         /// <param name="prefix">Some text to add before the log message.</param>
-        public void LogError(Exception exception)
+        public void LogError(Exception exception, string prefix = "")
         {
-            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {BaseServer.ResourceName.ToUpper()} > {module.Name}: {exception.Message}\n{exception.StackTrace}");
+            string pre = (prefix != "") ? prefix : "";
+            Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {BaseServer.ResourceName.ToUpper()} > {module.Name}{pre}: {exception.Message}\n{exception.StackTrace}");
         }
 
         #endregion

@@ -86,7 +86,7 @@ namespace VinaFrameworkClient.Core
                 if (_module.GetType() == moduleType)
                 {
                     error = true;
-                    LogError(new Exception($"Trying to add existing module {moduleType.Name}!"));
+                    LogError(new Exception($"Module {moduleType.Name} was already added!"));
                 }
             }
 
@@ -95,14 +95,14 @@ namespace VinaFrameworkClient.Core
             try
             {
                 if (!moduleType.IsSubclassOf(typeof(Module)))
-                    throw new Exception($"Trying to add class {moduleType.Name} that is not a subclass of Module!");
+                    throw new Exception($"Trying to add class {moduleType.Name} that is not extending Module class!");
 
                 Module module = (Module)Activator.CreateInstance(moduleType, this);
                 modules.Add(module);
             }
             catch (Exception exception)
             {
-                LogError(exception, $" in {moduleType.Name} > Constructor");
+                LogError(exception, $" > {moduleType.Name} in Constructor");
             }
         }
 
@@ -122,6 +122,15 @@ namespace VinaFrameworkClient.Core
             }
 
             throw new Exception($"Module {typeof(T)} doesn't exist!");
+        }
+
+        /// <summary>
+        /// Get the player list.
+        /// </summary>
+        /// <returns>Return a PlayerList object.</returns>
+        public PlayerList GetPlayers()
+        {
+            return Players;
         }
 
         /// <summary>
@@ -211,7 +220,7 @@ namespace VinaFrameworkClient.Core
         /// <param name="prefix">Some text to add before the log message.</param>
         protected void LogError(Exception exception, string prefix = "")
         {
-            string pre = (prefix != "") ? $" {prefix}" : "";
+            string pre = (prefix != "") ? prefix : "";
             Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {BaseClient.ResourceName.ToUpper()}{pre}: {exception.Message}\n{exception.StackTrace}");
         }
 

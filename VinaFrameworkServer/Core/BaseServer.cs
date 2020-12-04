@@ -22,7 +22,7 @@ namespace VinaFrameworkServer.Core
             EventHandlers["playerConnecting"] += new Action<Player>(onPlayerConnecting);
             EventHandlers["playerDropped"] += new Action<Player, string>(onPlayerDropped);
             EventHandlers[$"internal:{Name}:onPlayerClientInitialized"] += new Action<Player>(onPlayerClientInitialized);
-            
+            AddTick(GarbageCollect);
             Debug.WriteLine("============================================================");
             Log($"Instanciating...");
         }
@@ -56,7 +56,7 @@ namespace VinaFrameworkServer.Core
                 }
                 catch (Exception exception)
                 {
-                    LogError(exception, $" in {module.GetType().Name} > OnPlayerConnecting");
+                    LogError(exception, $" > {module.Name} in OnPlayerConnecting");
                 }
             }
         }
@@ -72,7 +72,7 @@ namespace VinaFrameworkServer.Core
                 }
                 catch (Exception exception)
                 {
-                    LogError(exception, $" in {module.GetType().Name} > OnPlayerDropped");
+                    LogError(exception, $" > {module.Name} in OnPlayerDropped");
                 }
             }
         }
@@ -88,13 +88,21 @@ namespace VinaFrameworkServer.Core
                 }
                 catch (Exception exception)
                 {
-                    LogError(exception, $" in {module.GetType().Name} > OnPlayerClientInitialized");
+                    LogError(exception, $" > {module.Name} in OnPlayerClientInitialized");
                 }
             }
         }
 
         #endregion
         #region SERVER METHODS
+
+        private async Task GarbageCollect()
+        {
+            await Delay(60000);
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
 
         /// <summary>
         /// Check if a Module has been added to the Server instance.
@@ -126,7 +134,7 @@ namespace VinaFrameworkServer.Core
                 if (_module.GetType() == moduleType)
                 {
                     error = true;
-                    LogError(new Exception($"Trying to add existing module {moduleType.Name}!"));
+                    LogError(new Exception($"Module {moduleType.Name} was already added!"));
                 }
             }
 
@@ -135,7 +143,7 @@ namespace VinaFrameworkServer.Core
             try
             {
                 if (!moduleType.IsSubclassOf(typeof(Module)))
-                    throw new Exception($"Trying to add class {moduleType.Name} that is not a subclass of Module!");
+                    throw new Exception($"Trying to add class {moduleType.Name} that is not extending Module class!");
 
                 Module module = (Module)Activator.CreateInstance(moduleType, this);
                 modules.Add(module);
@@ -251,7 +259,7 @@ namespace VinaFrameworkServer.Core
         /// <param name="prefix">Some text to add before the log message.</param>
         protected void LogError(Exception exception, string prefix = "")
         {
-            string pre = (prefix != "") ? $" {prefix}" : "";
+            string pre = (prefix != "") ? prefix : "";
             Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {BaseServer.ResourceName.ToUpper()}{pre}: {exception.Message}\n{exception.StackTrace}");
         }
 
