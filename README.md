@@ -1,4 +1,4 @@
-# Vina-Framework 1.0
+# Vina-Framework
 I am developing Vina Framework to help create high-quality modulable C# FiveM resources.  
 The framework handle &amp; abstract basic stuff that most resource needs.  
   
