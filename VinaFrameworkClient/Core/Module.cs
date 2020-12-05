@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 
+using CitizenFX.Core;
+
 namespace VinaFrameworkClient.Core
 {
     /// <summary>
@@ -64,6 +66,42 @@ namespace VinaFrameworkClient.Core
             catch (Exception exception)
             {
                 script.LogError(exception, " in OnModuleInitialized");
+            }
+        }
+
+        /// <summary>
+        /// Overridable method that run when a player has died.
+        /// Only work if your client has UseDeadWatcher enabled.
+        /// </summary>
+        /// <param name="player">The player  died.</param>
+        protected virtual void OnPlayerDied(Player player) { }
+        internal void onPlayerDied(Player player)
+        {
+            try
+            {
+                OnPlayerDied(player);
+            }
+            catch (Exception exception)
+            {
+                script.LogError(exception, " in OnPlayerDied");
+            }
+        }
+
+        /// <summary>
+        /// Overridable method that run when a player was dead and is now alive again.
+        /// Only work if your client has UseDeadWatcher enabled.
+        /// </summary>
+        /// <param name="player">The player resurected.</param>
+        protected virtual void OnPlayerResurect(Player player) { }
+        internal void onPlayerResurect(Player player)
+        {
+            try
+            {
+                OnPlayerResurect(player);
+            }
+            catch (Exception exception)
+            {
+                script.LogError(exception, " in OnPlayerResurect");
             }
         }
 

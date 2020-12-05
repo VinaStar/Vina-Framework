@@ -17,17 +17,18 @@ namespace VinaFrameworkServer.Core
         /// </summary>
         public BaseServer()
         {
+            ResourceName = API.GetCurrentResourceName();
+
             Debug.WriteLine("============================================================");
             Log($"Instanciating...");
 
-            ResourceName = API.GetCurrentResourceName();
             modules = new List<Module>();
 
             EventHandlers["playerConnecting"] += new Action<Player>(onPlayerConnecting);
             EventHandlers["playerDropped"] += new Action<Player, string>(onPlayerDropped);
             EventHandlers[$"internal:{Name}:onPlayerClientInitialized"] += new Action<Player>(onPlayerClientInitialized);
 
-            AddTick(GarbageCollect);
+            Tick += garbageCollect;
         }
 
         #region VARIABLES
@@ -43,6 +44,12 @@ namespace VinaFrameworkServer.Core
         public string Name { get { return ResourceName; } }
 
         private List<Module> modules;
+
+        /// <summary>
+        /// **Experimental**
+        /// Cleanup the garbage once per minute to keep memory usage low.
+        /// </summary>
+        protected bool UseGarbageCollector { get; set; } = true;
 
         #endregion
         #region BASE EVENTS
@@ -99,15 +106,24 @@ namespace VinaFrameworkServer.Core
         }
 
         #endregion
-        #region SERVER METHODS
+        #region SERVER TICKS
 
-        private async Task GarbageCollect()
+        private async Task garbageCollect()
         {
+            if (!UseGarbageCollector)
+            {
+                await Delay(1);
+                return;
+            }
+
             await Delay(60000);
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
+
+        #endregion
+        #region SERVER METHODS
 
         /// <summary>
         /// Check if a Module has been added to the Server instance.

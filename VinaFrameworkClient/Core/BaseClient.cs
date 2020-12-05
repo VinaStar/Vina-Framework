@@ -18,12 +18,15 @@ namespace VinaFrameworkClient.Core
         public BaseClient()
         {
             ResourceName = API.GetCurrentResourceName();
-            modules = new List<Module>();
 
             Debug.WriteLine("============================================================");
             Log($"Initializing...");
 
+            modules = new List<Module>();
+            deadPlayers = new List<Player>();
+
             Tick += initialize;
+            Tick += garbageCollect;
         }
 
         #region VARIABLES
@@ -40,17 +43,91 @@ namespace VinaFrameworkClient.Core
 
         private List<Module> modules;
 
+        /// <summary>
+        /// **Experimental**
+        /// Cleanup the garbage once a minutes to keep memory usage low.
+        /// </summary>
+        protected bool UseGarbageCollector { get; set; } = true;
+
+        /// <summary>
+        /// **Experimental**
+        /// Enabled the process that watches for players who die and also resurect.
+        /// Enable if you need to use OnPlayerDied and OnPlayerResurect base events in your modules.
+        /// </summary>
+        protected bool UsePlayerDeadResurectWatcher
+        {
+            get
+            {
+                return _usePlayerDeadResurectWatcher;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    deadPlayers.Clear();
+                }
+                _usePlayerDeadResurectWatcher = value;
+            }
+        }
+        private bool _usePlayerDeadResurectWatcher = false;
+        private List<Player> deadPlayers;
+
         #endregion
         #region BASE EVENTS
 
         private async Task initialize()
         {
             Tick -= initialize;
+            Tick += playerDeadResurectWatcher;
 
             await Delay(0);
 
             Log($"Initialized!");
             TriggerServerEvent($"internal:{Name}:onPlayerClientInitialized");
+        }
+
+        private async Task playerDeadResurectWatcher()
+        {
+            await Delay(250); // run 4 times per second, experimental
+
+            if (!UsePlayerDeadResurectWatcher) return;
+
+            foreach (Player player in Players)
+            {
+                if (!deadPlayers.Contains(player) && player.IsDead)
+                {
+                    deadPlayers.Add(player);
+                    foreach (Module module in modules)
+                    {
+                        module.onPlayerDied(player);
+                    }
+                }
+                else if (deadPlayers.Contains(player) && !player.IsDead)
+                {
+                    deadPlayers.Remove(player);
+                    foreach (Module module in modules)
+                    {
+                        module.onPlayerResurect(player);
+                    }
+                }
+            }
+        }
+
+        #endregion
+        #region SERVER TICKS
+
+        private async Task garbageCollect()
+        {
+            if (!UseGarbageCollector)
+            {
+                await Delay(1);
+                return;
+            }
+
+            await Delay(60000);
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         #endregion
