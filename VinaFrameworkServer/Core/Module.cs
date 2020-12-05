@@ -43,6 +43,10 @@ namespace VinaFrameworkServer.Core
         #endregion
         #region BASE EVENTS
 
+        /// <summary>
+        /// Overridable method that run on first tick only. You can get other module from here.
+        /// </summary>
+        protected virtual void OnModuleInitialized() { }
         private async Task initialize()
         {
             script.Log($"Initializing...");
@@ -54,6 +58,7 @@ namespace VinaFrameworkServer.Core
             try
             {
                 OnModuleInitialized();
+                script.Log($"Initialized!");
             }
             catch (Exception exception)
             {
@@ -62,27 +67,20 @@ namespace VinaFrameworkServer.Core
         }
 
         /// <summary>
-        /// Overridable method that run on first tick only. You can get other module from here.
-        /// </summary>
-        protected virtual void OnModuleInitialized()
-        {
-            script.Log($"Initialized!");
-        }
-
-        internal void onPlayerConnecting(Player player)
-        {
-            OnPlayerConnecting(player);
-        }
-
-        /// <summary>
         /// Overridable method that run when a player is connecting to the server.
         /// </summary>
         /// <param name="player">The player that is connecting.</param>
-        protected abstract void OnPlayerConnecting(Player player);
-
-        internal void onPlayerDropped(Player player, string reason)
+        protected virtual void OnPlayerConnecting(Player player) { }
+        internal void onPlayerConnecting(Player player)
         {
-            OnPlayerDropped(player, reason);
+            try
+            {
+                OnPlayerConnecting(player);
+            }
+            catch (Exception exception)
+            {
+                script.LogError(exception, " in OnPlayerConnecting");
+            }
         }
 
         /// <summary>
@@ -90,18 +88,35 @@ namespace VinaFrameworkServer.Core
         /// </summary>
         /// <param name="player">The player that left.</param>
         /// <param name="reason">The reason that player left.</param>
-        protected abstract void OnPlayerDropped(Player player, string reason);
-
-        internal void onPlayerClientInitialized(Player player)
+        protected virtual void OnPlayerDropped(Player player, string reason) { }
+        internal void onPlayerDropped(Player player, string reason)
         {
-            OnPlayerClientInitialized(player);
+            try
+            {
+                OnPlayerDropped(player, reason);
+            }
+            catch (Exception exception)
+            {
+                script.LogError(exception, " in OnPlayerDropped");
+            }
         }
 
         /// <summary>
         /// Overridable method that run when the client has initialized. (After loading)
         /// </summary>
         /// <param name="player">The player client that has initialized.</param>
-        protected abstract void OnPlayerClientInitialized(Player player);
+        protected virtual void OnPlayerClientInitialized(Player player) { }
+        internal void onPlayerClientInitialized(Player player)
+        {
+            try
+            {
+                OnPlayerClientInitialized(player);
+            }
+            catch (Exception exception)
+            {
+                script.LogError(exception, " in OnPlayerClientInitialized");
+            }
+        }
 
         #endregion
     }

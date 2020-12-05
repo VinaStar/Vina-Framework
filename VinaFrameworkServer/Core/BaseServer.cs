@@ -17,14 +17,17 @@ namespace VinaFrameworkServer.Core
         /// </summary>
         public BaseServer()
         {
+            Debug.WriteLine("============================================================");
+            Log($"Instanciating...");
+
             ResourceName = API.GetCurrentResourceName();
             modules = new List<Module>();
+
             EventHandlers["playerConnecting"] += new Action<Player>(onPlayerConnecting);
             EventHandlers["playerDropped"] += new Action<Player, string>(onPlayerDropped);
             EventHandlers[$"internal:{Name}:onPlayerClientInitialized"] += new Action<Player>(onPlayerClientInitialized);
+
             AddTick(GarbageCollect);
-            Debug.WriteLine("============================================================");
-            Log($"Instanciating...");
         }
 
         #region VARIABLES
@@ -60,6 +63,7 @@ namespace VinaFrameworkServer.Core
                 }
             }
         }
+
         private void onPlayerDropped([FromSource] Player player, string reason)
         {
             Log($"PlayerDropped {player.Name}");
@@ -76,6 +80,7 @@ namespace VinaFrameworkServer.Core
                 }
             }
         }
+
         private void onPlayerClientInitialized([FromSource] Player player)
         {
             Log($"PlayerClientInitialized {player.Name}");
@@ -170,6 +175,15 @@ namespace VinaFrameworkServer.Core
             }
 
             throw new Exception($"Module {typeof(T)} doesn't exist!");
+        }
+
+        /// <summary>
+        /// Get the player list.
+        /// </summary>
+        /// <returns>Return a PlayerList object.</returns>
+        public PlayerList GetPlayers()
+        {
+            return Players;
         }
 
         /// <summary>

@@ -41,6 +41,13 @@ namespace VinaFrameworkClient.Core
         #endregion
         #region BASE EVENTS
 
+        /// <summary>
+        /// Overridable method that run on first tick only. You can get other module from here.
+        /// </summary>
+        protected virtual void OnModuleInitialized()
+        {
+            script.Log($"Initialized!");
+        }
         private async Task initialize()
         {
             script.Log($"Initializing...");
@@ -52,19 +59,12 @@ namespace VinaFrameworkClient.Core
             try
             {
                 OnModuleInitialized();
+                script.Log($"Initialized!");
             }
             catch (Exception exception)
             {
                 script.LogError(exception, " in OnModuleInitialized");
             }
-        }
-
-        /// <summary>
-        /// Overridable method that run on first tick only. You can get other module from here.
-        /// </summary>
-        protected virtual void OnModuleInitialized()
-        {
-            script.Log($"Initialized!");
         }
 
         #endregion
