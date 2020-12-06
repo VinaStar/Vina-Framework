@@ -15,6 +15,7 @@ Newtonsoft.Json.dll
 ---
   
 ## INFORMATIONS
+[Getting Started](https://github.com/VinaStar/Vina-Framework/wiki/Getting-Started)  
 [Complete Documentation](http://vinasky.online/Vina-Framework-Doc/)  
   
 More Coming soon.
