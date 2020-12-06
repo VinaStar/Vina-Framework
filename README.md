@@ -4,6 +4,11 @@ The framework handle &amp; abstract basic stuff that most resource needs.
   
 ---
   
+## DEPENDENCIES
+Newtonsoft.Json.dll
+  
+---
+  
 ## TEMPLATE
 [Vina Template Resource](https://github.com/VinaStar/Vina-Framework-Resource)
   
