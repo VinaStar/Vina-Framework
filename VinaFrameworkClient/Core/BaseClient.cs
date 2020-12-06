@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 using CitizenFX.Core;
 using CitizenFX.Core.Native;
 
+using Newtonsoft.Json;
+
+using VinaFrameworkClient.Shared;
+
 namespace VinaFrameworkClient.Core
 {
     /// <summary>
@@ -24,6 +28,8 @@ namespace VinaFrameworkClient.Core
 
             modules = new List<Module>();
             deadPlayers = new List<Player>();
+
+            EventHandlers[$"internal:{Name}:onServerNuiRequest"] += new Action<NuiRequest>(onServerNuiRequest);
 
             Tick += initialize;
             Tick += garbageCollect;
@@ -75,6 +81,14 @@ namespace VinaFrameworkClient.Core
         #endregion
         #region BASE EVENTS
 
+        private void onServerNuiRequest(NuiRequest request)
+        {
+            SendNuiActionData(request);
+        }
+
+        #endregion
+        #region SERVER TICKS
+
         private async Task initialize()
         {
             Tick -= initialize;
@@ -84,6 +98,20 @@ namespace VinaFrameworkClient.Core
 
             Log($"Initialized!");
             TriggerServerEvent($"internal:{Name}:onPlayerClientInitialized");
+        }
+
+        private async Task garbageCollect()
+        {
+            if (!UseGarbageCollector)
+            {
+                await Delay(1);
+                return;
+            }
+
+            await Delay(60000);
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         private async Task playerDeadResurectWatcher()
@@ -111,23 +139,6 @@ namespace VinaFrameworkClient.Core
                     }
                 }
             }
-        }
-
-        #endregion
-        #region SERVER TICKS
-
-        private async Task garbageCollect()
-        {
-            if (!UseGarbageCollector)
-            {
-                await Delay(1);
-                return;
-            }
-
-            await Delay(60000);
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
         }
 
         #endregion
@@ -282,10 +293,98 @@ namespace VinaFrameworkClient.Core
         }
 
         /// <summary>
+        /// Send a message to this resource Nui.
+        /// </summary>
+        /// <param name="nuiRequest">The nui request object.</param>
+        public static void SendNuiActionData(NuiRequest nuiRequest)
+        {
+            try
+            {
+                string serializedQuery = JsonConvert.SerializeObject(nuiRequest, Formatting.Indented);
+
+                API.SendNuiMessage(serializedQuery);
+            }
+            catch (Exception exception)
+            {
+                LogError(exception, " in SendNuiActionData");
+            }
+        }
+
+        /// <summary>
+        /// Send a message to this resource Nui.
+        /// </summary>
+        /// <param name="action">The action name.</param>
+        /// <param name="data">Some data will be sent as a string.</param>
+        public static void SendNuiActionData(string action, dynamic data = null)
+        {
+            NuiRequest request = new NuiRequest(action, data);
+            SendNuiActionData(request);
+        }
+
+        /// <summary>
+        /// Serialize an object into a json string.
+        /// </summary>
+        /// <param name="obj">The object to convert into a string.</param>
+        /// <param name="formatting">The json format, indented or none by default.</param>
+        /// <returns>The converted json string.</returns>
+        public static string SerializeObject(dynamic obj, Formatting formatting = Formatting.None)
+        {
+            try
+            {
+                return JsonConvert.SerializeObject(obj, formatting);
+            }
+            catch (Exception exception)
+            {
+                LogError(exception, " in SerializeObject");
+            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// Deserialize a json into a dynamic object.
+        /// </summary>
+        /// <param name="json">The json string to convert into an object.</param>
+        /// <returns>The converted object.</returns>
+        public static dynamic DeserializeObject(string json)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject(json);
+            }
+            catch (Exception exception)
+            {
+                LogError(exception, " in DeserializeObject");
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Deserialize an json into an object of a specific Type.
+        /// </summary>
+        /// <typeparam name="T">The type to convert the json to.</typeparam>
+        /// <param name="json">The json string to convert into an object.</param>
+        /// <returns>The converted object.</returns>
+        public static T DeserializeObject<T>(string json)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(json);
+            }
+            catch (Exception exception)
+            {
+                LogError(exception, $" in DeserializeObject with generic type {typeof(T).Name}");
+            }
+
+            return default(T);
+        }
+
+        /// <summary>
         /// Log a message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        protected void Log(string message)
+        protected static void Log(string message)
         {
             Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [INFO] {BaseClient.ResourceName.ToUpper()}: {message}");
         }
@@ -295,7 +394,7 @@ namespace VinaFrameworkClient.Core
         /// </summary>
         /// <param name="exception">The Exception to log.</param>
         /// <param name="prefix">Some text to add before the log message.</param>
-        protected void LogError(Exception exception, string prefix = "")
+        protected static void LogError(Exception exception, string prefix = "")
         {
             string pre = (prefix != "") ? prefix : "";
             Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {BaseClient.ResourceName.ToUpper()}{pre}: {exception.Message}\n{exception.StackTrace}");

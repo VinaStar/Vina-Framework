@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 using CitizenFX.Core;
 using CitizenFX.Core.Native;
 
+using Newtonsoft.Json;
+
+using VinaFrameworkClient.Shared;
+
 namespace VinaFrameworkServer.Core
 {
     /// <summary>
@@ -268,10 +272,88 @@ namespace VinaFrameworkServer.Core
         }
 
         /// <summary>
+        /// Send a nui message to a player client.
+        /// </summary>
+        /// <param name="player">The player to send to.</param>
+        /// <param name="nuiRequest">The nui request to send.</param>
+        public static void SendNuiActionDataTo(Player player, NuiRequest nuiRequest)
+        {
+            TriggerClientEvent(player, $"internal:{ResourceName}:onServerNuiRequest", nuiRequest);
+        }
+
+        /// <summary>
+        /// Send a nui message to all player clients.
+        /// </summary>
+        /// <param name="nuiRequest">The nui request to send to all players.</param>
+        public static void SendNuiActionDataToAll(NuiRequest nuiRequest)
+        {
+            TriggerClientEvent($"internal:{ResourceName}:onServerNuiRequest", nuiRequest);
+        }
+
+        /// <summary>
+        /// Serialize an object into a json string.
+        /// </summary>
+        /// <param name="obj">The object to convert into a string.</param>
+        /// <param name="formatting">The json format, indented or none by default.</param>
+        /// <returns>The converted json string.</returns>
+        public static string SerializeObject(dynamic obj, Formatting formatting = Formatting.None)
+        {
+            try
+            {
+                return JsonConvert.SerializeObject(obj, formatting);
+            }
+            catch (Exception exception)
+            {
+                LogError(exception, " in SerializeObject");
+            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// Deserialize a json into a dynamic object.
+        /// </summary>
+        /// <param name="json">The json string to convert into an object.</param>
+        /// <returns>The converted object.</returns>
+        public static dynamic DeserializeObject(string json)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject(json);
+            }
+            catch (Exception exception)
+            {
+                LogError(exception, " in DeserializeObject");
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Deserialize an json into an object of a specific Type.
+        /// </summary>
+        /// <typeparam name="T">The type to convert the json to.</typeparam>
+        /// <param name="json">The json string to convert into an object.</param>
+        /// <returns>The converted object.</returns>
+        public static T DeserializeObject<T>(string json)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(json);
+            }
+            catch (Exception exception)
+            {
+                LogError(exception, $" in DeserializeObject with generic type {typeof(T).Name}");
+            }
+
+            return default(T);
+        }
+
+        /// <summary>
         /// Log a message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        protected void Log(string message)
+        protected static void Log(string message)
         {
             Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [INFO] {BaseServer.ResourceName.ToUpper()}: {message}");
         }
@@ -281,7 +363,7 @@ namespace VinaFrameworkServer.Core
         /// </summary>
         /// <param name="exception">The Exception to log.</param>
         /// <param name="prefix">Some text to add before the log message.</param>
-        protected void LogError(Exception exception, string prefix = "")
+        protected static void LogError(Exception exception, string prefix = "")
         {
             string pre = (prefix != "") ? prefix : "";
             Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} [ERROR] {BaseServer.ResourceName.ToUpper()}{pre}: {exception.Message}\n{exception.StackTrace}");

@@ -1,4 +1,4 @@
-﻿namespace VinaFrameworkClient.Core
+﻿namespace VinaFrameworkClient.Shared
 {
     public class NuiRequest
     {
