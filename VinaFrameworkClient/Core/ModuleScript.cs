@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json;
+
 using CitizenFX.Core;
+using CitizenFX.Core.Native;
 
 namespace VinaFrameworkClient.Core
 {
@@ -103,6 +106,36 @@ namespace VinaFrameworkClient.Core
         public void SetExport(string name, Delegate method)
         {
             Exports.Add(name, method);
+            Log($"Export {name} set!");
+        }
+
+        /// <summary>
+        /// Send a message to this resource Nui.
+        /// </summary>
+        /// <param name="nuiRequest">The nui request object.</param>
+        public void SendNuiActionData(NuiRequest nuiRequest)
+        {
+            try
+            {
+                string serializedQuery = JsonConvert.SerializeObject(nuiRequest, Formatting.Indented);
+
+                API.SendNuiMessage(serializedQuery);
+            }
+            catch (Exception exception)
+            {
+                LogError(exception, " in SendNuiActionData");
+            }
+        }
+
+        /// <summary>
+        /// Send a message to this resource Nui.
+        /// </summary>
+        /// <param name="action">The action name.</param>
+        /// <param name="data">Some data will be sent as a string.</param>
+        public void SendNuiActionData(string action, dynamic data = null)
+        {
+            NuiRequest request = new NuiRequest(action, data);
+            SendNuiActionData(request);
         }
 
         /// <summary>

@@ -47,7 +47,7 @@ namespace VinaFrameworkClient.Core
         /// **Experimental**
         /// Cleanup the garbage once a minutes to keep memory usage low.
         /// </summary>
-        protected bool UseGarbageCollector { get; set; } = true;
+        protected bool UseGarbageCollector { get; set; } = false;
 
         /// <summary>
         /// **Experimental**

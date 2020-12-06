@@ -56,8 +56,6 @@ namespace VinaFrameworkServer.Core
 
         private void onPlayerConnecting([FromSource] Player player)
         {
-            Log($"PlayerConnecting {player.Name}");
-
             foreach (Module module in modules)
             {
                 try
@@ -73,8 +71,6 @@ namespace VinaFrameworkServer.Core
 
         private void onPlayerDropped([FromSource] Player player, string reason)
         {
-            Log($"PlayerDropped {player.Name}");
-
             foreach (Module module in modules)
             {
                 try
@@ -90,8 +86,6 @@ namespace VinaFrameworkServer.Core
 
         private void onPlayerClientInitialized([FromSource] Player player)
         {
-            Log($"PlayerClientInitialized {player.Name}");
-
             foreach (Module module in modules)
             {
                 try

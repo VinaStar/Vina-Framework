@@ -103,6 +103,7 @@ namespace VinaFrameworkServer.Core
         public void SetExport(string name, Delegate method)
         {
             Exports.Add(name, method);
+            Log($"Export {name} set!");
         }
 
         /// <summary>
