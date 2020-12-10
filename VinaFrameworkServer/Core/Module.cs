@@ -133,7 +133,7 @@ namespace VinaFrameworkServer.Core
         {
             try
             {
-                await OnPlayerConnecting(player, deferrals);
+                OnPlayerConnecting(player, deferrals);
             }
             catch (Exception exception)
             {
