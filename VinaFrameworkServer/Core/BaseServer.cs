@@ -319,6 +319,24 @@ namespace VinaFrameworkServer.Core
         }
 
         /// <summary>
+        /// Get a player by it's identifier of type
+        /// </summary>
+        /// <param name="type">The identifier type, steam, license, xbl, ip, discord, live.</param>
+        /// <param name="identifier">The identitifer value to find.</param>
+        /// <returns>Return a Player object or null</returns>
+        public Player GetPlayerByIdentifier(string type, string identifier)
+        {
+            foreach (Player player in Players)
+            {
+                if (player.Identifiers[type] == identifier)
+                {
+                    return player;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Add an event.
         /// </summary>
         /// <param name="eventName">Event name to add.</param>
