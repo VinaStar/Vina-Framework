@@ -33,7 +33,7 @@ namespace VinaFrameworkClient.Core
             EventHandlers["onResourceStart"] += new Action<string>(onResourceStart);
             EventHandlers["onResourceStop"] += new Action<string>(onResourceStop);
             EventHandlers["gameEventTriggered"] += new Action<string, int[]>(onGameEventTriggered);
-            EventHandlers["populationPedCreating"] += new Action<float, float, float, int, dynamic>(onPopulationPedCreating);
+            EventHandlers["populationPedCreating"] += new Action<float, float, float, uint, dynamic>(onPopulationPedCreating);
             EventHandlers[$"internal:{Name}:onServerNuiRequest"] += new Action<NuiRequest>(onServerNuiRequest);
 
             Tick += initialize;
@@ -133,7 +133,7 @@ namespace VinaFrameworkClient.Core
             await Delay(0);
         }
 
-        private async void onPopulationPedCreating(float x, float y, float z, int modelHash, dynamic overrideCalls)
+        private async void onPopulationPedCreating(float x, float y, float z, uint modelHash, dynamic overrideCalls)
         {
             foreach (Module module in modules)
             {

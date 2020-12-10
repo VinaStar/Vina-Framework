@@ -191,8 +191,8 @@ namespace VinaFrameworkClient.Core
         /// <param name="z">The Z position.</param>
         /// <param name="modelHash">The intended model.</param>
         /// <param name="overrideCalls">{ setModel(int|string); setPosition(x, y, z) }</param>
-        protected virtual async void OnPopulationPedCreating(float x, float y, float z, int modelHash, dynamic overrideCalls) { await BaseClient.Delay(0); }
-        internal async void onPopulationPedCreating(float x, float y, float z, int modelHash, dynamic overrideCalls)
+        protected virtual async void OnPopulationPedCreating(float x, float y, float z, uint modelHash, dynamic overrideCalls) { await BaseClient.Delay(0); }
+        internal async void onPopulationPedCreating(float x, float y, float z, uint modelHash, dynamic overrideCalls)
         {
             try
             {
