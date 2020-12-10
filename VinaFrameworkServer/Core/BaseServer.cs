@@ -28,8 +28,17 @@ namespace VinaFrameworkServer.Core
 
             modules = new List<Module>();
 
-            EventHandlers["playerConnecting"] += new Action<Player>(onPlayerConnecting);
+            EventHandlers["onResourceStarting"] += new Action<string>(onResourceStarting);
+            EventHandlers["onResourceStart"] += new Action<string>(onResourceStart);
+            EventHandlers["onResourceStop"] += new Action<string>(onResourceStop);
+            EventHandlers["playerConnecting"] += new Action<Player, string, dynamic, dynamic>(onPlayerConnecting);
+            EventHandlers["playerJoining"] += new Action<Player>(onPlayerJoining);
             EventHandlers["playerDropped"] += new Action<Player, string>(onPlayerDropped);
+            EventHandlers["playerEnteredScope"] += new Action<dynamic>(onPlayerEnteredScope);
+            EventHandlers["playerLeftScope"] += new Action<dynamic>(onPlayerLeftScope);
+            EventHandlers["entityCreating"] += new Action<int>(onEntityCreating);
+            EventHandlers["entityCreated"] += new Action<int>(onEntityCreated);
+            EventHandlers["entityRemoved"] += new Action<int>(onEntityRemoved);
             EventHandlers[$"internal:{Name}:onPlayerClientInitialized"] += new Action<Player>(onPlayerClientInitialized);
 
             Tick += garbageCollect;
@@ -58,49 +67,124 @@ namespace VinaFrameworkServer.Core
         #endregion
         #region BASE EVENTS
 
-        private void onPlayerConnecting([FromSource] Player player)
+        private async void onResourceStarting(string resourceName)
         {
             foreach (Module module in modules)
             {
-                try
-                {
-                    module.onPlayerConnecting(player);
-                }
-                catch (Exception exception)
-                {
-                    LogError(exception, $" > {module.Name} in OnPlayerConnecting");
-                }
+                module.onResourceStarting(resourceName);
             }
+
+            await Delay(0);
         }
 
-        private void onPlayerDropped([FromSource] Player player, string reason)
+        private async void onResourceStart(string resourceName)
         {
             foreach (Module module in modules)
             {
-                try
-                {
-                    module.onPlayerDropped(player, reason);
-                }
-                catch (Exception exception)
-                {
-                    LogError(exception, $" > {module.Name} in OnPlayerDropped");
-                }
+                module.onResourceStart(resourceName);
             }
+
+            await Delay(0);
         }
 
-        private void onPlayerClientInitialized([FromSource] Player player)
+        private async void onResourceStop(string resourceName)
         {
             foreach (Module module in modules)
             {
-                try
-                {
-                    module.onPlayerClientInitialized(player);
-                }
-                catch (Exception exception)
-                {
-                    LogError(exception, $" > {module.Name} in OnPlayerClientInitialized");
-                }
+                module.onResourceStop(resourceName);
             }
+
+            await Delay(0);
+        }
+
+        private async void onPlayerConnecting([FromSource] Player player, string playerName, dynamic setKickReason, dynamic deferrals)
+        {
+            foreach (Module module in modules)
+            {
+                module.onPlayerConnecting(player, deferrals);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onPlayerJoining([FromSource] Player player)
+        {
+            foreach (Module module in modules)
+            {
+                module.onPlayerJoining(player);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onPlayerDropped([FromSource] Player player, string reason)
+        {
+            foreach (Module module in modules)
+            {
+                module.onPlayerDropped(player, reason);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onPlayerClientInitialized([FromSource] Player player)
+        {
+            foreach (Module module in modules)
+            {
+                module.onPlayerClientInitialized(player);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onPlayerEnteredScope(dynamic data)
+        {
+            foreach (Module module in modules)
+            {
+                module.onPlayerEnteredScope(data["for"], data["player"]);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onPlayerLeftScope(dynamic data)
+        {
+            foreach (Module module in modules)
+            {
+                module.onPlayerLeftScope(data["for"], data["player"]);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onEntityCreating(int entityHandle)
+        {
+            foreach (Module module in modules)
+            {
+                module.onEntityCreating(entityHandle);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onEntityCreated(int entityHandle)
+        {
+            foreach (Module module in modules)
+            {
+                module.onEntityCreated(entityHandle);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onEntityRemoved(int entityHandle)
+        {
+            foreach (Module module in modules)
+            {
+                module.onEntityRemoved(entityHandle);
+            }
+
+            await Delay(0);
         }
 
         #endregion
@@ -201,6 +285,40 @@ namespace VinaFrameworkServer.Core
         }
 
         /// <summary>
+        /// Get a player by name
+        /// </summary>
+        /// <param name="name">The player name to get.</param>
+        /// <returns>Return a Player object or null</returns>
+        public Player GetPlayerByName(string name)
+        {
+            foreach (Player player in Players)
+            {
+                if (player.Name == name)
+                {
+                    return player;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get a player by it's handle
+        /// </summary>
+        /// <param name="handle">The player handle to get.</param>
+        /// <returns>Return a Player object or null</returns>
+        public Player GetPlayerByHandle(string handle)
+        {
+            foreach (Player player in Players)
+            {
+                if (player.Handle == handle)
+                {
+                    return player;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Add an event.
         /// </summary>
         /// <param name="eventName">Event name to add.</param>
@@ -294,13 +412,13 @@ namespace VinaFrameworkServer.Core
         /// Serialize an object into a json string.
         /// </summary>
         /// <param name="obj">The object to convert into a string.</param>
-        /// <param name="formatting">The json format, indented or none by default.</param>
+        /// <param name="indented">The json format, indented or none by default.</param>
         /// <returns>The converted json string.</returns>
-        public static string SerializeObject(dynamic obj, Formatting formatting = Formatting.None)
+        public static string SerializeObject(dynamic obj, bool indented = false)
         {
             try
             {
-                return JsonConvert.SerializeObject(obj, formatting);
+                return JsonConvert.SerializeObject(obj, (indented) ? Formatting.Indented : Formatting.None);
             }
             catch (Exception exception)
             {

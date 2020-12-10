@@ -29,6 +29,11 @@ namespace VinaFrameworkClient.Core
             modules = new List<Module>();
             deadPlayers = new List<Player>();
 
+            EventHandlers["onResourceStarting"] += new Action<string>(onResourceStarting);
+            EventHandlers["onResourceStart"] += new Action<string>(onResourceStart);
+            EventHandlers["onResourceStop"] += new Action<string>(onResourceStop);
+            EventHandlers["gameEventTriggered"] += new Action<string, int[]>(onGameEventTriggered);
+            EventHandlers["populationPedCreating"] += new Action<float, float, float, int, dynamic>(onPopulationPedCreating);
             EventHandlers[$"internal:{Name}:onServerNuiRequest"] += new Action<NuiRequest>(onServerNuiRequest);
 
             Tick += initialize;
@@ -81,9 +86,61 @@ namespace VinaFrameworkClient.Core
         #endregion
         #region BASE EVENTS
 
-        private void onServerNuiRequest(NuiRequest request)
+        private async void onServerNuiRequest(NuiRequest request)
         {
             SendNuiActionData(request);
+
+            await Delay(0);
+        }
+
+        private async void onResourceStarting(string resourceName)
+        {
+            foreach (Module module in modules)
+            {
+                module.onResourceStarting(resourceName);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onResourceStart(string resourceName)
+        {
+            foreach (Module module in modules)
+            {
+                module.onResourceStart(resourceName);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onResourceStop(string resourceName)
+        {
+            foreach (Module module in modules)
+            {
+                module.onResourceStop(resourceName);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onGameEventTriggered(string name, int[] data)
+        {
+            foreach(Module module in modules)
+            {
+                module.onGameEventTriggered(name, data);
+            }
+
+            await Delay(0);
+        }
+
+        private async void onPopulationPedCreating(float x, float y, float z, int modelHash, dynamic overrideCalls)
+        {
+            foreach (Module module in modules)
+            {
+                module.onPopulationPedCreating(x, y, z, modelHash, overrideCalls);
+            }
+
+            await Delay(0);
         }
 
         #endregion
@@ -325,13 +382,13 @@ namespace VinaFrameworkClient.Core
         /// Serialize an object into a json string.
         /// </summary>
         /// <param name="obj">The object to convert into a string.</param>
-        /// <param name="formatting">The json format, indented or none by default.</param>
+        /// <param name="indented">The json format, indented or none by default.</param>
         /// <returns>The converted json string.</returns>
-        public static string SerializeObject(dynamic obj, Formatting formatting = Formatting.None)
+        public static string SerializeObject(dynamic obj, bool indented = false)
         {
             try
             {
-                return JsonConvert.SerializeObject(obj, formatting);
+                return JsonConvert.SerializeObject(obj, (indented) ? Formatting.Indented : Formatting.None);
             }
             catch (Exception exception)
             {
