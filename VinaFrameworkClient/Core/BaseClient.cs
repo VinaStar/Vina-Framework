@@ -279,6 +279,40 @@ namespace VinaFrameworkClient.Core
         }
 
         /// <summary>
+        /// Get a player by name
+        /// </summary>
+        /// <param name="name">The player name to get.</param>
+        /// <returns>Return a Player object or null</returns>
+        public Player GetPlayerByName(string name)
+        {
+            foreach (Player player in Players)
+            {
+                if (player.Name == name)
+                {
+                    return player;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get a player by it's handle
+        /// </summary>
+        /// <param name="handle">The player handle to get.</param>
+        /// <returns>Return a Player object or null</returns>
+        public Player GetPlayerByHandle(int handle)
+        {
+            foreach (Player player in Players)
+            {
+                if (player.Handle == handle)
+                {
+                    return player;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Add an event.
         /// </summary>
         /// <param name="eventName">Event name to add.</param>
